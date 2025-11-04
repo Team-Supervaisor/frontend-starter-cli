@@ -1,0 +1,21 @@
+{
+  "name": "cli-next",
+  "version": "1.0.0",
+  "bin": {
+    "cli-next": "./index.js"
+  },
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "CLI to bootstrap our internal Next.js starter project",
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "degit": "^2.8.4",
+    "prompts": "^2.4.2"
+  }
+}
