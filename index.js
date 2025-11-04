@@ -3,6 +3,7 @@ import { execSync } from "child_process";
 import prompts from "prompts";
 import chalk from "chalk";
 import fs from "fs";
+import degit from "degit";
 
 async function main() {
   console.log(chalk.cyan("🚀 Create My Next App"));
@@ -10,6 +11,7 @@ async function main() {
   const args = process.argv.slice(2);
   let projectName = args[0];
 
+ 
   if (!projectName) {
     const response = await prompts({
       type: "text",
@@ -27,15 +29,17 @@ async function main() {
 
   console.log(chalk.yellow(`\n📦 Creating project ${projectName}...`));
 
-
   try {
-    execSync(
-      `git clone https://github.com/Team-Supervaisor/frontend-next-starter.git ${projectName}`,
-      { stdio: "inherit" }
-    );
-    console.log(chalk.green("\n✅ Template cloned successfully."));
+    const emitter = degit("Team-Supervaisor/frontend-next-starter", {
+      cache: false,
+      force: true,
+      verbose: true,
+    });
+    await emitter.clone(projectName);
+
+    console.log(chalk.green("\n✅ Template copied successfully."));
   } catch (error) {
-    console.error(chalk.red("\n❌ Failed to clone the repository."));
+    console.error(chalk.red("\n❌ Failed to copy the repository."));
     console.error(error.message);
     process.exit(1);
   }
@@ -43,6 +47,24 @@ async function main() {
 
   process.chdir(projectName);
 
+---
+  if (fs.existsSync(".git")) {
+    fs.rmSync(".git", { recursive: true, force: true });
+  }
+
+
+  try {
+    execSync("git init", { stdio: "inherit" });
+    execSync("git add .", { stdio: "inherit" });
+    execSync('git commit -m "Initial commit from create-next-starter"', {
+      stdio: "inherit",
+    });
+    console.log(chalk.green("\n✅ Initialized new Git repository."));
+  } catch (error) {
+    console.warn(chalk.yellow("\n⚠️ Skipped git initialization."));
+  }
+
+  // --- STEP 5: Ask package manager ---
   const { packageManager } = await prompts({
     type: "select",
     name: "packageManager",
@@ -56,6 +78,7 @@ async function main() {
     initial: 0,
   });
 
+  // --- STEP 6: Install dependencies ---
   if (packageManager !== "skip") {
     console.log(
       chalk.yellow(`\n📦 Installing dependencies using ${packageManager}...`)
@@ -68,15 +91,16 @@ async function main() {
         )
       );
     } catch (error) {
-      console.error(chalk.red("\n❌ Failed to clone the repository."));
+      console.error(
+        chalk.red(`\n❌ Failed to install dependencies with ${packageManager}.`)
+      );
       console.error(error.message);
-      process.exit(1);
     }
-
   } else {
     console.log(chalk.gray("\n⚙️ Skipped dependency installation."));
   }
 
+  // --- STEP 7: Done ---
   console.log(chalk.green(`\n🎉 Project setup complete!`));
   console.log(chalk.blue(`\nNext steps:`));
   console.log(`  cd ${projectName}`);
