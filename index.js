@@ -1,4 +1,4 @@
-
+#!/usr/bin/env node
 import { execSync } from "child_process";
 import prompts from "prompts";
 import chalk from "chalk";
@@ -11,7 +11,6 @@ async function main() {
   const args = process.argv.slice(2);
   let projectName = args[0];
 
- 
   if (!projectName) {
     const response = await prompts({
       type: "text",
@@ -44,13 +43,11 @@ async function main() {
     process.exit(1);
   }
 
-
   process.chdir(projectName);
 
   if (fs.existsSync(".git")) {
     fs.rmSync(".git", { recursive: true, force: true });
   }
-
 
   try {
     execSync("git init", { stdio: "inherit" });
@@ -62,7 +59,6 @@ async function main() {
   } catch (error) {
     console.warn(chalk.yellow("\n⚠️ Skipped git initialization."));
   }
-
 
   const { packageManager } = await prompts({
     type: "select",
@@ -76,7 +72,6 @@ async function main() {
     ],
     initial: 0,
   });
-
 
   if (packageManager !== "skip") {
     console.log(
