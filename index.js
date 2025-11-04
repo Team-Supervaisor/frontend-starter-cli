@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+
 import { execSync } from "child_process";
 import prompts from "prompts";
 import chalk from "chalk";
@@ -47,7 +47,6 @@ async function main() {
 
   process.chdir(projectName);
 
----
   if (fs.existsSync(".git")) {
     fs.rmSync(".git", { recursive: true, force: true });
   }
@@ -64,7 +63,7 @@ async function main() {
     console.warn(chalk.yellow("\n⚠️ Skipped git initialization."));
   }
 
-  // --- STEP 5: Ask package manager ---
+
   const { packageManager } = await prompts({
     type: "select",
     name: "packageManager",
@@ -78,7 +77,7 @@ async function main() {
     initial: 0,
   });
 
-  // --- STEP 6: Install dependencies ---
+
   if (packageManager !== "skip") {
     console.log(
       chalk.yellow(`\n📦 Installing dependencies using ${packageManager}...`)
@@ -100,7 +99,6 @@ async function main() {
     console.log(chalk.gray("\n⚙️ Skipped dependency installation."));
   }
 
-  // --- STEP 7: Done ---
   console.log(chalk.green(`\n🎉 Project setup complete!`));
   console.log(chalk.blue(`\nNext steps:`));
   console.log(`  cd ${projectName}`);
