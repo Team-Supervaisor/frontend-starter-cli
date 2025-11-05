@@ -28,6 +28,8 @@ async function main() {
 
   console.log(chalk.yellow(`\n📦 Creating project ${projectName}...`));
 
+  // --- Try using degit first (for public repos)
+  let cloned = false;
   try {
     const emitter = degit("Team-Supervaisor/frontend-next-starter", {
       cache: false,
@@ -35,31 +37,54 @@ async function main() {
       verbose: true,
     });
     await emitter.clone(projectName);
-
-    console.log(chalk.green("\n✅ Template copied successfully."));
+    cloned = true;
+    console.log(chalk.green("\n✅ Template copied successfully using degit."));
   } catch (error) {
-    console.error(chalk.red("\n❌ Failed to copy the repository."));
-    console.error(error.message);
-    process.exit(1);
+    console.warn(
+      chalk.yellow(
+        "\n⚠️ Degit failed (likely private repo). Trying git clone..."
+      )
+    );
   }
 
+  // --- If degit failed, fallback to git clone (for private repos)
+  if (!cloned) {
+    try {
+      execSync(
+        `git clone https://github.com/Team-Supervaisor/frontend-next-starter.git ${projectName}`,
+        { stdio: "inherit" }
+      );
+      console.log(chalk.green("\n✅ Template cloned successfully using git."));
+    } catch (error) {
+      console.error(chalk.red("\n❌ Failed to clone the repository."));
+      console.error(error.message);
+      process.exit(1);
+    }
+  }
+
+  // --- Move into project folder
   process.chdir(projectName);
 
+  // --- Remove existing .git folder to start fresh
   if (fs.existsSync(".git")) {
     fs.rmSync(".git", { recursive: true, force: true });
   }
 
+  // --- Initialize new Git repo with clean history
   try {
     execSync("git init", { stdio: "inherit" });
     execSync("git add .", { stdio: "inherit" });
     execSync('git commit -m "Initial commit from create-next-starter"', {
       stdio: "inherit",
     });
-    console.log(chalk.green("\n✅ Initialized new Git repository."));
+    console.log(
+      chalk.green("\n✅ Initialized new Git repository (fresh history).")
+    );
   } catch (error) {
     console.warn(chalk.yellow("\n⚠️ Skipped git initialization."));
   }
 
+  // --- Choose package manager
   const { packageManager } = await prompts({
     type: "select",
     name: "packageManager",
@@ -73,6 +98,7 @@ async function main() {
     initial: 0,
   });
 
+  // --- Install dependencies
   if (packageManager !== "skip") {
     console.log(
       chalk.yellow(`\n📦 Installing dependencies using ${packageManager}...`)
